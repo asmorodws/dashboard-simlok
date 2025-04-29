@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 15, 23, 42;
+  --background-rgb: 241, 245, 249;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  margin: 0;
+}
+
+/* Custom focus styles for better accessibility */
+*:focus-visible {
+  outline: 2px solid rgb(51, 65, 85);
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better typography */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.2;
+}
+
+/* Consistent button styling */
+button, 
+[type='button'], 
+[type='reset'], 
+[type='submit'] {
+  -webkit-appearance: button;
+  appearance: button;
+}
+
+/* Improved table styling */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
