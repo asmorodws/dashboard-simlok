@@ -3,144 +3,140 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import VendorForm from '../../../components/VendorForm';
+import { supabase } from '../../../utils/supabaseClient';
 
-export default function SubmitProject() {
+export default function SubmitPage() {
+  const [vendor, setVendor] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const submissionId = searchParams.get('id');
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  const [initialData, setInitialData] = useState({});
-  const [isLoading, setIsLoading] = useState(!!submissionId);
+  const id = searchParams.get('id');
 
-  // If we have an ID, fetch the submission data
   useEffect(() => {
-    if (submissionId) {
-      // In a real app, you would fetch the data from your API
-      // For this example, we'll use mock data
-      const mockSubmissions = [
-        {
-          id: 1,
-          vendorName: 'PT Maju Bersama',
-          simjaNumber: 'SIMJA-2023-001',
-          jobDescription: 'Pemasangan jaringan fiber optik di area pabrik',
-          startDate: '2023-11-01',
-          endDate: '2023-11-15',
-          startTime: '08:00',
-          endTime: '17:00',
-          equipment: 'Fiber splicer, OTDR, Toolkit',
-          sikaNumber: 'SIKA-2023-001',
-          workerCount: '5'
-        },
-        {
-          id: 2,
-          vendorName: 'CV Teknik Utama',
-          simjaNumber: 'SIMJA-2023-002',
-          jobDescription: 'Perbaikan sistem pendingin ruangan server',
-          startDate: '2023-11-05',
-          endDate: '2023-11-07',
-          startTime: '09:00',
-          endTime: '16:00',
-          equipment: 'AC toolkit, Refrigerant, Pressure gauge',
-          sikaNumber: 'SIKA-2023-002',
-          workerCount: '3'
-        },
-        {
-          id: 3,
-          vendorName: 'PT Konstruksi Prima',
-          simjaNumber: 'SIMJA-2023-003',
-          jobDescription: 'Renovasi ruang meeting lantai 3',
-          startDate: '2023-11-10',
-          endDate: '2023-11-25',
-          startTime: '07:30',
-          endTime: '16:30',
-          equipment: 'Peralatan konstruksi, Cat, Peralatan listrik',
-          sikaNumber: 'SIKA-2023-003',
-          workerCount: '8'
-        }
-      ];
-
-      const foundSubmission = mockSubmissions.find(sub => sub.id === parseInt(submissionId));
-      
-      if (foundSubmission) {
-        setInitialData(foundSubmission);
-      } else {
-        setSubmitError('Pengajuan tidak ditemukan');
-      }
-      
-      setIsLoading(false);
+    if (id) {
+      setLoading(true);
+      fetchVendor(id);
     }
-  }, [submissionId]);
+  }, [id]);
+
+  const fetchVendor = async (vendorId) => {
+    try {
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('*')
+        .eq('id', vendorId)
+        .single();
+      
+      if (error) throw error;
+      
+      // Transform data to match form field names
+      const formattedData = {
+        id: data.id,
+        vendorName: data.vendor_name || '',
+        simjaNumber: data.simja_number || '',
+        sikaNumber: data.sika_number || '',
+        jobDescription: data.job_description || '',
+        startDate: data.start_date || '',
+        endDate: data.end_date || '',
+        startTime: data.start_time || '',
+        endTime: data.end_time || '',
+        equipment: data.equipment || '',
+        workerCount: data.worker_count?.toString() || '',
+        simjaFileName: data.simja_file_name || '',
+        sikaFileName: data.sika_file_name || '',
+        idCardFileName: data.id_card_file_name || ''
+      };
+      
+      setVendor(formattedData);
+    } catch (error) {
+      console.error('Error fetching vendor:', error);
+      alert('Error loading vendor data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
-    setSubmitError('');
-    
     try {
-      // In a real application, you would send this data to your API
-      console.log('Submitting project data:', formData);
+      console.log("Form data being submitted:", formData);
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Prepare data for Supabase
+      const submissionData = {
+        vendor_name: formData.vendor_name,
+        simja_number: formData.simja_number,
+        sika_number: formData.sika_number,
+        job_description: formData.job_description,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        equipment: formData.equipment,
+        worker_count: formData.worker_count,
+        status: id ? (formData.status || 'Pending') : 'Pending',
+        updated_at: new Date(),
+        simja_file_name: formData.simja_file_name,
+        sika_file_name: formData.sika_file_name,
+        id_card_file_name: formData.id_card_file_name
+      };
+
+      console.log("Submission data being sent to Supabase:", submissionData);
+
+      let result;
       
-      // Redirect to dashboard after successful submission
-      router.push('/vendor/dashboard?success=true');
+      if (id) {
+        // Update existing submission
+        const { data, error } = await supabase
+          .from('submissions')
+          .update(submissionData)
+          .eq('id', id)
+          .select();
+        
+        if (error) throw error;
+        result = data[0];
+      } else {
+        // Create new submission
+        submissionData.created_at = new Date();
+        
+        const { data, error } = await supabase
+          .from('submissions')
+          .insert(submissionData)
+          .select();
+        
+        if (error) throw error;
+        result = data[0];
+      }
+      
+      alert(id ? 'Pengajuan berhasil diperbarui!' : 'Pengajuan berhasil disimpan!');
+      router.push('/vendor/dashboard');
     } catch (error) {
-      console.error('Error submitting project:', error);
-      setSubmitError('An error occurred while submitting your project. Please try again.');
+      console.error('Error submitting form:', error);
+      alert('Terjadi kesalahan saat menyimpan data: ' + error.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="max-w-3xl mx-auto p-8">
-        <div className="text-center">
-          <p className="text-slate-600">Loading submission data...</p>
-        </div>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-semibold text-slate-800">
-            {submissionId ? "Ubah Pengajuan" : "Form Pengajuan"}
-          </h1>
-          <button
-            onClick={() => router.back()}
-            className="px-4 py-2 border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 transition-colors"
-          >
-            Kembali
-          </button>
-        </div>
-        {/* <p className="mt-2 text-slate-600">
-          {submissionId 
-            ? 'Edit the form below to update your project submission.' 
-            : 'Fill out the form below to submit a new project for verification.'}
-        </p> */}
-      </div>
-      
-      {submitError && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-700">{submitError}</p>
-        </div>
-      )}
-      
-      <div className="bg-white p-6 rounded-lg shadow-md border border-slate-200">
-        <VendorForm 
-          onSubmit={handleSubmit} 
-          initialData={initialData}
-          buttonText={isSubmitting 
-            ? 'Submitting...' 
-            : submissionId ? 'Update Project' : 'Submit Project'
-          }
-        />
-      </div>
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-2xl font-bold mb-6">
+        {id ? 'Edit Pengajuan Vendor' : 'Tambah Pengajuan Vendor'}
+      </h1>
+      <VendorForm 
+        onSubmit={handleSubmit} 
+        initialData={vendor || {}} 
+        buttonText={id ? 'Update Pengajuan' : 'Submit Pengajuan'} 
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }

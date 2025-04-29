@@ -15,7 +15,7 @@ export function Sidebar() {
           </li>
           <li>
             <Link href="/verifier/dashboard" className="block px-4 py-2 text-lg hover:bg-blue-700">
-              Verifier Dashboard
+            HSE Officer Dashboard
             </Link>
           </li>
         </ul>

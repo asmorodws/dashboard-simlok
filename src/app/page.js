@@ -25,8 +25,8 @@ export default function Home() {
         
         <Link href="/verifier/dashboard" className="block">
           <div className="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-slate-200">
-            <h2 className="text-2xl font-semibold mb-4 text-slate-800">Verifier Dashboard</h2>
-            <p className="text-slate-600">Access your verifier dashboard to review and process vendor submissions.</p>
+            <h2 className="text-2xl font-semibold mb-4 text-slate-800">HSE Officer Dashboard</h2>
+            <p className="text-slate-600">Access your HSE Officer to review and process vendor submissions.</p>
             <div className="mt-6 flex justify-end">
               <span className="text-slate-800 font-medium flex items-center">
                 Access
