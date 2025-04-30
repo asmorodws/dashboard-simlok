@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-slate-100">
-      <h1 className="text-4xl font-bold mb-8 text-slate-800">Welcome to Dashboard System</h1>
+      <h1 className="text-4xl font-bold mb-8 text-slate-800">Welcome to SIMLok Online</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
         <Link href="/vendor/dashboard" className="block">

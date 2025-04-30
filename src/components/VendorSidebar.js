@@ -6,7 +6,7 @@ export function VendorSidebar() {
   return (
     <div className="w-64 bg-slate-800 text-white h-full">
       <div className="p-6 border-b border-slate-700">
-        <h1 className="text-2xl font-bold">SIMlok Online</h1>
+        <h1 className="text-2xl font-bold">SIMLok Online</h1>
       </div>
       <nav className="mt-6">
         <ul>

@@ -18,7 +18,6 @@ export function VerifierSidebar() {
               Dashboard
             </Link>
           </li>
-         
         </ul>
       </nav>
     </div>
