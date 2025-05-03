@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 /**
  * Create a new record in a Supabase table

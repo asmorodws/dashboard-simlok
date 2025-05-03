@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 import DashboardCard from "@/components/DashboardCard";
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import ModalDetail from "@/components/ModalDetail";
+import { getFormat24H } from "@/utils/timeFormatter";
 
 export default function VendorDashboard() {
   const router = useRouter();
@@ -37,15 +38,17 @@ export default function VendorDashboard() {
       .subscribe();
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   async function fetchSubmissions() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("submissions")
-        .select("*")
-        .order("created_at", { ascending: false });
+  .from("submissions")
+  .select("*")
+  .order("created_at", { ascending: false })
+  .limit(5);
+
 
       if (error) throw error;
 
@@ -60,13 +63,13 @@ export default function VendorDashboard() {
 
   function updateStats(data) {
     const pending = data.filter(
-      (s) => s.status === "Pending" || s.status === "Menunggu"
+      (s) => s.status === 0 || s.status === "Menunggu"
     ).length;
     const approved = data.filter(
-      (s) => s.status === "Approved" || s.status === "Disetujui"
+      (s) => s.status === 1 || s.status === "Disetujui"
     ).length;
     const rejected = data.filter(
-      (s) => s.status === "Rejected" || s.status === "Ditolak"
+      (s) => s.status === 2 || s.status === "Ditolak"
     ).length;
     setStats({ total: data.length, pending, approved, rejected });
   }
@@ -228,7 +231,7 @@ function SubmissionTable({ submissions, onEdit, onDelete, onView }) {
                     {sub.start_date} s/d {sub.end_date}
                   </div>
                   <div className="text-sm text-slate-500">
-                    {sub.start_time} - {sub.end_time}
+                    {getFormat24H(sub.start_time)} - {getFormat24H(sub.end_time)}
                   </div>
                 </Td>
                 <Td>
@@ -240,24 +243,25 @@ function SubmissionTable({ submissions, onEdit, onDelete, onView }) {
                       <>
                         <button
                           onClick={() => onEdit(sub.id)}
-                          className="px-6 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => onDelete(sub.id)}
-                          className="px-6 py-2 text-white bg-red-600 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200"
+                          className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-xs"
                         >
-                          Hapus
+                          Delete
                         </button>
                       </>
                     ) : (
                       <button
-                        onClick={() => onView(sub)}
-                        className="px-6 py-2 text-white bg-green-600 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                      >
-                        Detail
-                      </button>
+                      onClick={() => onView(sub)}
+                      className="px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded text-xs transition"
+                    >
+                      Detail
+                    </button>
+                    
                     )}
                   </div>
                 </Td>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import VendorForm from '../../../components/VendorForm';
-import { supabase } from '../../../utils/supabaseClient';
+import { supabase } from '../../../lib/supabaseClient';
 
 export default function SubmitPage() {
   const [vendor, setVendor] = useState(null);
@@ -83,7 +83,7 @@ export default function SubmitPage() {
 
       console.log("Submission data being sent to Supabase:", submissionData);
 
-      let result;
+     
       
       if (id) {
         // Update existing submission
@@ -134,7 +134,7 @@ export default function SubmitPage() {
       <VendorForm 
         onSubmit={handleSubmit} 
         initialData={vendor || {}} 
-        buttonText={id ? 'Update Pengajuan' : 'Submit Pengajuan'} 
+        buttonText={id ? 'Simpan Perubahan' : 'Submit Pengajuan'} 
         isSubmitting={isSubmitting}
       />
     </div>

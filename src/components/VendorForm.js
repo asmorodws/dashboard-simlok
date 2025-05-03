@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 export default function VendorForm({ onSubmit, initialData = {}, buttonText = 'Submit', isSubmitting = false }) {
   const [formData, setFormData] = useState({
@@ -75,6 +75,10 @@ export default function VendorForm({ onSubmit, initialData = {}, buttonText = 'S
     return Object.keys(errors).length === 0;
   };
 
+  const handleCancel = () => {
+    window.history.back(); 
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -110,7 +114,8 @@ export default function VendorForm({ onSubmit, initialData = {}, buttonText = 'S
         sika_file_name: formData.sikaFileName || '',
         id_card_file_name: formData.idCardFileName || ''
       };
-      
+
+     
       console.log("Submission data being sent to Supabase:", submissionData);
       
       // Additional validation before submission to prevent NULL constraint errors
@@ -452,7 +457,14 @@ export default function VendorForm({ onSubmit, initialData = {}, buttonText = 'S
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-end pt-4 gap-4">
+      <button
+  type="button"
+  onClick={handleCancel} 
+  className="px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors font-medium"
+>
+  Batal
+</button>
         <button 
           type="submit" 
           className={`px-6 py-3 bg-blue-800 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
@@ -468,6 +480,8 @@ export default function VendorForm({ onSubmit, initialData = {}, buttonText = 'S
             </div>
           ) : buttonText}
         </button>
+ 
+
       </div>
     </form>
   );

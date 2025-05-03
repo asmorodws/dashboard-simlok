@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import { CACHE_KEYS, CACHE_DURATIONS } from '../utils/cacheConfig';
 
 // Fetcher function for SWR

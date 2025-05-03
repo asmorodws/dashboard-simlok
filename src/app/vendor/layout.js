@@ -1,12 +1,12 @@
 // src/app/vendor/layout.js
 
-import { VendorSidebar } from '../../components/VendorSidebar';
+import { DashboardSidebar } from '../../components/DashboardSidebar';
 
 export default function VendorLayout({ children }) {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Vendor Sidebar */}
-      <VendorSidebar />
+      <DashboardSidebar />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto bg-slate-100">
