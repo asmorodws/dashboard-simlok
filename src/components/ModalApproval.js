@@ -81,6 +81,8 @@ export default function ModalApproval({ selectedSubmission, closeDetailModal }) 
                   <option value="0">Pending</option>
                   <option value="1">Approved</option>
                   <option value="2">Rejected</option>
+                  <option value="3">Expired</option>
+                  
                 </select>
               </div>
             </div>

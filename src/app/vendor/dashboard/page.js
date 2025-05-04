@@ -51,14 +51,34 @@ export default function VendorDashboard() {
     fetchSubmissions();
   
     const subscription = supabase
-      .channel("submissions-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "submissions" },
-        fetchSubmissions
-      )
-      .subscribe();
-  
+  .channel("supabase_realtime") // pastikan nama channel sesuai dengan yang ada di Supabase
+  .on(
+    "postgres_changes",
+    {
+      event: "*", // Anda bisa sesuaikan event di sini: INSERT, UPDATE, DELETE
+      schema: "public",
+      table: "submissions",
+    },
+    (payload) => {
+      console.log("Realtime update:", payload);
+      setSubmissions((prev) => {
+        let updated = [...prev];
+        if (payload.eventType === "INSERT") {
+          updated = [payload.new, ...prev];
+        } else if (payload.eventType === "UPDATE") {
+          updated = prev.map((sub) =>
+            sub.id === payload.new.id ? payload.new : sub
+          );
+        } else if (payload.eventType === "DELETE") {
+          updated = prev.filter((sub) => sub.id !== payload.old.id);
+        }
+        updateStats(updated);
+        return updated;
+      });
+    }
+  )
+  .subscribe();
+
     return () => subscription.unsubscribe();
   }, []);
   
@@ -183,12 +203,16 @@ export default function VendorDashboard() {
         onView={handleViewDetails}
       />
 
-      {showModal && selectedSubmission && (
-        <ModalDetail
-          selectedSubmission={selectedSubmission}
-          closeDetailModal={handleCloseModal}
-        />
-      )}
+{showModal && selectedSubmission && (
+  <ModalDetail
+    selectedSubmission={selectedSubmission}
+    closeDetailModal={() => {
+      setSelectedSubmission(null);
+      setShowModal(false);
+    }}
+  />
+)}
+
     </div>
   );
 }

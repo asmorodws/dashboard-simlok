@@ -35,10 +35,10 @@ export default function VerifierDashboard() {
   const fetchSubmissions = useCallback(async () => {
     try {
       const { data, error } = await supabase
-  .from("submissions")
-  .select("*")
-  .order("created_at", { ascending: false })
-  .limit(5);
+        .from("submissions")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5);
 
       if (error) throw error;
 
@@ -55,30 +55,33 @@ export default function VerifierDashboard() {
     fetchSubmissions();
 
     const channel = supabase
-      .channel("realtime submissions")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "submissions" },
-        (payload) => {
-          console.log("Realtime update:", payload);
-          setSubmissions((prev) => {
-            let updated = [...prev];
-            if (payload.eventType === "INSERT") {
-              updated = [payload.new, ...prev];
-            } else if (payload.eventType === "UPDATE") {
-              updated = prev.map((sub) =>
-                sub.id === payload.new.id ? payload.new : sub
-              );
-            } else if (payload.eventType === "DELETE") {
-              updated = prev.filter((sub) => sub.id !== payload.old.id);
-            }
-            setStats(calculateStats(updated));
-            return updated;
-          });
+  .channel("supabase_realtime") // pastikan nama channel sesuai dengan yang ada di Supabase
+  .on(
+    "postgres_changes",
+    {
+      event: "*", // Anda bisa sesuaikan event di sini: INSERT, UPDATE, DELETE
+      schema: "public",
+      table: "submissions",
+    },
+    (payload) => {
+      console.log("Realtime update:", payload);
+      setSubmissions((prev) => {
+        let updated = [...prev];
+        if (payload.eventType === "INSERT") {
+          updated = [payload.new, ...prev];
+        } else if (payload.eventType === "UPDATE") {
+          updated = prev.map((sub) =>
+            sub.id === payload.new.id ? payload.new : sub
+          );
+        } else if (payload.eventType === "DELETE") {
+          updated = prev.filter((sub) => sub.id !== payload.old.id);
         }
-      )
-      .subscribe();
-
+        setStats(calculateStats(updated));
+        return updated;
+      });
+    }
+  )
+  .subscribe();
     return () => {
       channel.unsubscribe();
     };
@@ -268,12 +271,12 @@ export default function VerifierDashboard() {
                       </button>
                     </div>
                   ) : ( */}
-                    <button
-                      onClick={() => openDetailModal(item)}
-                      className="px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded text-xs transition"
-                    >
-                      Detail
-                    </button>
+                  <button
+                    onClick={() => openDetailModal(item)}
+                    className="px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded text-xs transition"
+                  >
+                    Detail
+                  </button>
                   {/* )} */}
                 </td>
               </tr>
@@ -282,7 +285,7 @@ export default function VerifierDashboard() {
         </table>
       </div>
 
-      {isDetailModalOpen && selectedSubmission && (
+      {/* {isDetailModalOpen && selectedSubmission && (
         selectedSubmission.status !== 3 ? (
           <ModalApproval
           selectedSubmission={selectedSubmission}
@@ -296,6 +299,13 @@ export default function VerifierDashboard() {
         )
         
        
+      )} */}
+
+      {isDetailModalOpen && selectedSubmission && (
+        <ModalApproval
+          selectedSubmission={selectedSubmission}
+          closeDetailModal={() => setIsDetailModalOpen(false)}
+        />
       )}
 
       {/* {isRejectionModalOpen && (

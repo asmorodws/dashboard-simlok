@@ -25,15 +25,56 @@ export default function SubmissionsList() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   useEffect(() => {
+    let subscription; // to store channel ref
+  
     const fetchSubmissions = async () => {
       const { data, error } = await supabase
         .from("submissions")
         .select("*")
         .order("created_at", { ascending: false });
+  
       if (!error) setData(data);
       setLoading(false);
+  
+      // Realtime listener
+      subscription = supabase
+        .channel("supabase_realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "*", // or "INSERT", "UPDATE", "DELETE" if you want specific
+            schema: "public",
+            table: "submissions",
+          },
+          (payload) => {
+            console.log("Realtime payload:", payload);
+            setData((prevData) => {
+              const { eventType, new: newRow, old: oldRow } = payload;
+              switch (eventType) {
+                case "INSERT":
+                  return [newRow, ...prevData];
+                case "UPDATE":
+                  return prevData.map((item) =>
+                    item.id === newRow.id ? newRow : item
+                  );
+                case "DELETE":
+                  return prevData.filter((item) => item.id !== oldRow.id);
+                default:
+                  return prevData;
+              }
+            });
+          }
+        )
+        .subscribe();
     };
+  
     fetchSubmissions();
+  
+    return () => {
+      if (subscription) {
+        supabase.removeChannel(subscription);
+      }
+    };
   }, []);
 
   const columnHelper = createColumnHelper();
@@ -248,7 +289,13 @@ export default function SubmissionsList() {
       </div>
 
       {/* Modal Detail or Approval */}
-      {isDetailModalOpen &&
+      {isDetailModalOpen && selectedSubmission && (
+        <ModalApproval
+          selectedSubmission={selectedSubmission}
+          closeDetailModal={() => setIsDetailModalOpen(false)}
+        />
+      )}
+      {/* {isDetailModalOpen &&
         selectedSubmission &&
         (selectedSubmission.status !== 3 ? (
           <ModalApproval
@@ -261,7 +308,7 @@ export default function SubmissionsList() {
             isOpen={isDetailModalOpen}
             onClose={() => setIsDetailModalOpen(false)}
           />
-        ))}
+        ))} */}
     </div>
   );
 }

@@ -16,13 +16,16 @@ import ModalDetail from "@/components/ModalDetail";
 import ModalApproval from "@/components/ModalApproval";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { useRouter } from "next/navigation";
 
 export default function SubmissionsList() {
   const [data, setData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false); // State for loading animation during delete
   const [selectedSubmission, setSelectedSubmission] = useState(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchSubmissions = async () => {
@@ -34,27 +37,77 @@ export default function SubmissionsList() {
       setLoading(false);
     };
     fetchSubmissions();
-  }, []);
 
-  const columnHelper = createColumnHelper();
+    // Realtime subscription to the submissions table
+    const channel = supabase
+      .channel("supabase_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // Listen to INSERT, UPDATE, DELETE events
+          schema: "public",
+          table: "submissions",
+        },
+        (payload) => {
+          console.log("Realtime update:", payload);
+          setData((prev) => {
+            let updated = [...prev];
+            if (payload.eventType === "INSERT") {
+              updated = [payload.new, ...prev]; // Add new submission
+            } else if (payload.eventType === "UPDATE") {
+              updated = prev.map((sub) =>
+                sub.id === payload.new.id ? payload.new : sub
+              ); // Update existing submission
+            } else if (payload.eventType === "DELETE") {
+              updated = prev.filter((sub) => sub.id !== payload.old.id); // Remove deleted submission
+            }
+            return updated;
+          });
+        }
+      )
+      .subscribe();
+
+    // Clean up on component unmount
+    return () => {
+      channel.unsubscribe();
+    };
+  }, []);
 
   const handleDetail = (submission) => {
     if (!submission) return;
     setSelectedSubmission(submission);
-    setIsDetailModalOpen(true);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedSubmission(null);
+    setShowModal(false);
   };
 
   const handleEdit = (id) => {
-    // Implement edit functionality
-    console.log("Edit submission with ID:", id);
-    // Navigate to edit page or open edit modal
+    router.push(`/vendor/submit?id=${id}`);
   };
 
-  const handleDelete = (id) => {
-    // Implement delete functionality
-    console.log("Delete submission with ID:", id);
-    // Show confirmation dialog and delete if confirmed
-  };
+  async function handleDelete(id) {
+    if (!confirm("Are you sure you want to delete this submission?")) return;
+    
+    setIsDeleting(true); // Start loading animation
+
+    try {
+      const { error } = await supabase
+        .from("submissions")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+  
+      // Ensure to use the correct state update function for data
+      setData((prev) => prev.filter((s) => s.id !== id));
+    } catch (err) {
+      alert("Failed to delete the submission. Please try again.");
+    } finally {
+      setIsDeleting(false); // End loading animation
+    }
+  }
 
   const columns = useMemo(() => {
     const columnHelper = createColumnHelper();
@@ -62,19 +115,20 @@ export default function SubmissionsList() {
     return [
       columnHelper.accessor("vendor_name", {
         header: "Vendor",
-        cell: (info) => (
-          <div>
-            <div className="font-semibold">{info.getValue()}</div>
-            <div className="text-xs text-slate-500">
-              SIMJA: {info.row.original.simja_number}
+        cell: (info) => {
+          const row = info.row.original;
+          return (
+            <div>
+              <div className="font-semibold">{info.getValue() || "-"}</div>
+              <div className="text-xs text-slate-500">
+                SIMJA: {row.simja_number || "-"}
+              </div>
+              <div className="text-xs text-slate-500">
+                SIKA: {row.sika_number || "-"}
+              </div>
             </div>
-            <div className="text-xs text-slate-500">
-              SIKA: {info.row.original.sika_number}
-            </div>
-          </div>
-        ),
-        enableSorting: true,
-        meta: { width: "200px" },
+          );
+        },
       }),
       columnHelper.accessor("job_description", {
         header: "Deskripsi",
@@ -132,7 +186,7 @@ export default function SubmissionsList() {
         cell: (info) => {
           const submission = info.row.original;
           return (
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 text-sm font-medium">
               {submission.status == 0 ? (
                 <>
                   <button
@@ -144,8 +198,13 @@ export default function SubmissionsList() {
                   <button
                     onClick={() => handleDelete(submission.id)}
                     className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-xs"
+                    disabled={isDeleting} // Disable the button during deletion
                   >
-                    Delete
+                    {isDeleting ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white" />
+                    ) : (
+                      "Delete"
+                    )}
                   </button>
                 </>
               ) : (
@@ -163,7 +222,7 @@ export default function SubmissionsList() {
         meta: { width: "200px" },
       }),
     ];
-  }, []);
+  }, [isDeleting]);
 
   const table = useReactTable({
     data,
@@ -180,33 +239,7 @@ export default function SubmissionsList() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-semibold text-slate-800">
-        Riwayat Pengajuan
-      </h1>
-
-      {/* <div className="relative flex w-full max-w-xs flex-col gap-1 text-on-surface dark:text-on-surface-dark">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="2"
-          stroke="currentColor"
-          className="absolute left-2.5 top-1/2 size-5 -translate-y-1/2 text-on-surface/50 dark:text-on-surface-dark/50"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-          />
-        </svg>
-        <input
-          type="search"
-          className="w-full rounded border border-gray-300 bg-white py-2 pl-10 pr-2 text-sm"
-          placeholder="Cari vendor"
-          value={globalFilter ?? ""}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-        />
-      </div> */}
+      <h1 className="text-3xl font-semibold text-slate-800">Riwayat Pengajuan</h1>
 
       <div className="overflow-x-auto bg-white p-4 rounded-xl shadow-md mt-4">
         <table className="min-w-full text-sm text-left text-gray-700">
@@ -281,21 +314,12 @@ export default function SubmissionsList() {
         </div>
       </div>
 
-      {/* Modal Detail or Approval */}
-      {isDetailModalOpen &&
-        selectedSubmission &&
-        (selectedSubmission.status !== 3 ? (
-          <ModalApproval
-            selectedSubmission={selectedSubmission}
-            closeDetailModal={() => setIsDetailModalOpen(false)}
-          />
-        ) : (
-          <ModalDetail
-            submission={selectedSubmission}
-            isOpen={isDetailModalOpen}
-            onClose={() => setIsDetailModalOpen(false)}
-          />
-        ))}
+      {showModal && (
+        <ModalDetail
+          data={selectedSubmission}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }
