@@ -12,6 +12,7 @@
     "@react-pdf/renderer": "^4.3.0",
     "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-query": "^5.74.11",
+    "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.1.0",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",

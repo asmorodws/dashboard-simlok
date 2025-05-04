@@ -22,7 +22,7 @@ export const generateSubmissionPDF = (submission) => {
   doc.text(`Tanggal Mulai: ${submission.startDate}`, 20, 70);
   doc.text(`Tanggal Selesai: ${submission.endDate}`, 20, 80);
   doc.text(`Waktu: ${submission.startTime} - ${submission.endTime}`, 20, 90);
-  doc.text(`Peralatan: ${submission.equipment}`, 20, 100);
+  doc.text(`Sarana Kerja: ${submission.equipment}`, 20, 100);
   doc.text(`SIKA Number: ${submission.sikaNumber}`, 20, 110);
   doc.text(`Jumlah Pekerja: ${submission.workerCount}`, 20, 120);
   doc.text(`Tanggal Pengajuan: ${submission.createdAt}`, 20, 130);

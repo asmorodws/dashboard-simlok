@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 import DashboardCard from "@/components/DashboardCard";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -26,8 +28,28 @@ export default function VendorDashboard() {
 
   // Fetch data and subscribe to real-time changes
   useEffect(() => {
+    async function fetchSubmissions() {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("submissions")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(5);
+  
+        if (error) throw error;
+  
+        setSubmissions(data);
+        updateStats(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  
     fetchSubmissions();
-
+  
     const subscription = supabase
       .channel("submissions-changes")
       .on(
@@ -36,19 +58,19 @@ export default function VendorDashboard() {
         fetchSubmissions
       )
       .subscribe();
-
+  
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, []);
+  
 
   async function fetchSubmissions() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-  .from("submissions")
-  .select("*")
-  .order("created_at", { ascending: false })
-  .limit(5);
-
+        .from("submissions")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5);
 
       if (error) throw error;
 
@@ -228,7 +250,7 @@ function SubmissionTable({ submissions, onEdit, onDelete, onView }) {
                 </Td>
                 <Td>
                   <div>
-                    {sub.start_date} s/d {sub.end_date}
+                    {format(new Date(sub.start_date), "d MMMM yyyy", { locale: id })} s/d {format(new Date(sub.end_date), "d MMMM yyyy", { locale: id })}
                   </div>
                   <div className="text-sm text-slate-500">
                     {getFormat24H(sub.start_time)} - {getFormat24H(sub.end_time)}

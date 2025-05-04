@@ -95,7 +95,7 @@ export default function ModalApproval({ selectedSubmission, closeDetailModal }) 
                 <p>{selectedSubmission.job_description}</p>
               </div>
               <div>
-                <span className="text-sm font-medium text-slate-600">Peralatan:</span>
+                <span className="text-sm font-medium text-slate-600">Sarana Kerja:</span>
                 <p>{selectedSubmission.equipment}</p>
               </div>
               <div>

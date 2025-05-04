@@ -67,7 +67,7 @@ export default function ModalDetail({ selectedSubmission, closeDetailModal }) {
                   <p>{selectedSubmission.job_description}</p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-slate-600">Peralatan:</span>
+                  <span className="text-sm font-medium text-slate-600">Sarana Kerja:</span>
                   <p>{selectedSubmission.equipment}</p>
                 </div>
                 <div>
@@ -160,7 +160,7 @@ export default function ModalDetail({ selectedSubmission, closeDetailModal }) {
                 </button>
               </>
             )}
-            {selectedSubmission.status === 'Approved' && (
+            {/* {selectedSubmission.status === 'Approved' && (
               <button 
                 onClick={() => {
                   try {
@@ -192,7 +192,7 @@ export default function ModalDetail({ selectedSubmission, closeDetailModal }) {
               >
                 Download PDF
               </button>
-            )}
+            )} */}
           </div>
         </div>
       </div>
