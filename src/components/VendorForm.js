@@ -107,7 +107,7 @@ export default function VendorForm({ onSubmit, initialData = {}, buttonText = 'S
         end_time: formData.endTime || '',
         equipment: formData.equipment || '',
         worker_count: parseInt(formData.workerCount, 10) || 0,
-        status: 'Pending',
+        status: 0,
         updated_at: new Date(),
         // Store only file names
         simja_file_name: formData.simjaFileName || '',

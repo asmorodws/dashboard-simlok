@@ -70,7 +70,7 @@ export default function ClientWrapper() {
         end_time: formData.end_time,
         equipment: formData.equipment,
         worker_count: formData.worker_count,
-        status: id ? (formData.status || 'Pending') : 'Pending',
+        status: id ? (formData.status || 0) : 0,
         updated_at: new Date(),
         simja_file_name: formData.simja_file_name,
         sika_file_name: formData.sika_file_name,

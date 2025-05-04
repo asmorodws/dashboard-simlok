@@ -1,6 +1,30 @@
 {
   "version": 4,
   "routes": {
+    "/": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "Next-Action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/",
+      "dataRoute": "/index.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/vendor/submit": {
       "experimentalBypassFor": [
         {
@@ -16,6 +40,30 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/vendor/submit",
       "dataRoute": "/vendor/submit.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/vendor/submissions-list": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "Next-Action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/vendor/submissions-list",
+      "dataRoute": "/vendor/submissions-list.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -49,7 +97,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/": {
+    "/verifier/submissions-list": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -62,8 +110,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/",
-      "dataRoute": "/index.rsc",
+      "srcRoute": "/verifier/submissions-list",
+      "dataRoute": "/verifier/submissions-list.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -125,61 +173,13 @@
         "x-next-revalidated-tags",
         "x-next-revalidate-tag-token"
       ]
-    },
-    "/vendor/submissions-list": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "Next-Action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/vendor/submissions-list",
-      "dataRoute": "/vendor/submissions-list.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/verifier/submissions-list": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "Next-Action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/verifier/submissions-list",
-      "dataRoute": "/verifier/submissions-list.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
     }
   },
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "9138e38b01a6b59313b15eefacec6e2e",
-    "previewModeSigningKey": "47a71846d762987ae15ac8f7557bf20b45cf9691c9403fe3d50a11c74ab9e578",
-    "previewModeEncryptionKey": "01a331f216ca3962097f9c7bafe2e7173476148aeb25289ba9e71a106705efeb"
+    "previewModeId": "a0515f4b89ec5667ac9e6d8c711cd7ec",
+    "previewModeSigningKey": "f18c5046b02094e940bf98366b613403ad4936f7cabdf0c97a59cde7399a78d6",
+    "previewModeEncryptionKey": "2fa91c4f3ae25fe5324285779a0e697ebe96929dd28133366b4c3b81763e0d86"
   }
 }
